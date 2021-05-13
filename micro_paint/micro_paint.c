@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <math.h>
 
 typedef struct	s_zone
 {
@@ -15,7 +14,8 @@ typedef struct	s_form
 	char	type;
 	float	x;
 	float	y;
-	float	r;
+	float	w;
+	float	h;
 	char	c;
 }				t_form;
 
@@ -64,15 +64,13 @@ void	o_set_tab(int y, int x, char tab[300][300], void *arg)
 void	o_draw_form(int y, int x, char tab[300][300], void *arg)
 {
 	t_form	*form;
-	float	dist;
 
 	form = (t_form *)arg;
-	dist = sqrt((x - form->x) * (x - form->x) + (y - form->y) * (y - form->y));
-	if (dist <= form->r)
+	if (y >= form->y && x >= form->x && y <= form->y + form->h && x <= form->x + form->w)
 	{
-		if (dist <= form->r && dist > form->r - 1)
+		if (y - form->y < 1 || x - form->x < 1 || (form->x + form->w) - x < 1 || (form->y + form->h) - y < 1)
 			tab[y][x] = form->c;
-		else if (form->type == 'C')
+		else if (form->type == 'R')
 			tab[y][x] = form->c;
 	}
 }
@@ -82,9 +80,9 @@ int	o_form(char tab[300][300], t_zone *zone, FILE *file)
 	int		rv;
 	t_form	form;
 
-	while ((rv = fscanf(file, "%c %f %f %f %c\n", &form.type, &form.x, &form.y, &form.r, &form.c)) == 5)
+	while ((rv = fscanf(file, "%c %f %f %f %f %c\n", &form.type, &form.x, &form.y, &form.w, &form.h, &form.c)) == 6)
 	{
-		if (form.r <= 0 || (form.type != 'C' && form.type != 'c'))
+		if (form.w <= 0 || form.h <= 0 || (form.type != 'R' && form.type != 'r'))
 			return (1);
 		o_browse_tab(tab, zone, o_draw_form, &form);
 	}
